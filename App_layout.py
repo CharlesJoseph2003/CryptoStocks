@@ -14,11 +14,11 @@ def create_layout():
         dmc.TabsList(
             
             [
-                dmc.TabsTab("Comparison", value="comparison"),
-                dmc.TabsTab("Stocks", value="stocks"),
-                dmc.TabsTab("Crypto", value="crypto"),
+                dmc.Tab("Comparison", value="comparison"),
+                dmc.Tab("Stocks", value="stocks"),
+                dmc.Tab("Crypto", value="crypto"),
             ],
-            justify="center",
+            position="center",
             grow=True,
         ),
         dmc.TabsPanel([create_layout_comparison()], value="comparison"),

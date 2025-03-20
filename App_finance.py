@@ -1,4 +1,5 @@
 import dash
+import dash_mantine_components as dmc
 from Stocks_Graphs import *
 from Comparison_Graphs import *
 from App_layout import create_layout
@@ -11,7 +12,11 @@ app = dash.Dash(__name__)
 
 layout = create_layout()
 
-app.layout = layout  # Set the initial layout
+# MantineProvider with parameters compatible with v0.8.0
+app.layout = dmc.MantineProvider(
+    theme={"colorScheme": "light"},
+    children=layout
+)
 
 Comparison_Callbacks(app)
 Stocks_Callbacks(app)
@@ -103,6 +108,3 @@ if __name__ == '__main__':
 #     Output("fiftydayaverage-right", "figure"),
 #     Input('right-dropdown', 'value'),
 # )(fiftyDayAverage_indicator_right)
-
-
-

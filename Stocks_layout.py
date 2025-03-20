@@ -21,7 +21,7 @@ def create_layout_stocks():
     stock_layout = html.Div(children=[
         dmc.Grid(
                 children=[
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         html.P("Stocks",  style={'textAlign': 'center', 'fontSize': 24, 'margin-top': 10}),
 
 
@@ -31,7 +31,7 @@ def create_layout_stocks():
                                         value=symbols_list[0],
                                         id='left-dropdown_stocks',
                                         searchable=True,
-                                        nothingFoundMessage="No options found",
+                                        nothingFound="No options found",
                                         clearable=True,
                                         style={'backgroundColor': 'lightgrey', 'position': 'absolute', 'z-index': '3', 'height': 'auto', 'width': '49%'}
                                 # data=[{'value': key, 'label': value} for key, value in symbols_dict.items()],
@@ -49,7 +49,7 @@ def create_layout_stocks():
 
 
 
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         html.P("Index", style={'textAlign': 'center', 'fontSize': 24, 'margin-top': 10,}),
                         dmc.Select(
                                 # data=crypto_symbols,
@@ -57,7 +57,7 @@ def create_layout_stocks():
                                         id='Dow-dropdown', 
                                         value=index_list[0],
                                         searchable=True,
-                                        nothingFoundMessage="No options found",
+                                        nothingFound="No options found",
                                         clearable=True,
                                         style={'backgroundColor': 'lightgrey', 'position': 'absolute', 'z-index': '3', 'width': '49%'}    # Specify the desired width}
                                         
@@ -146,7 +146,7 @@ def create_layout_stocks():
 
         dmc.Grid(
                 children=[
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         dmc.Card(
                         children=[
                                 dmc.CardSection(
@@ -180,7 +180,7 @@ def create_layout_stocks():
                 ]), span="auto"),
 
 
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         dmc.Card(
                         children=[
                                 dmc.CardSection(

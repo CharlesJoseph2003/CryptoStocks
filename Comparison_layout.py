@@ -26,7 +26,7 @@ def create_layout_comparison():
         # ),
          dmc.Grid(
                 children=[
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         html.P("Stocks",  style={'textAlign': 'center', 'fontSize': 24, 'margin-top': 10}),
 
 
@@ -36,7 +36,7 @@ def create_layout_comparison():
                                         value=symbols_list[0],
                                         id='left-dropdown',
                                         searchable=True,
-                                        nothingFoundMessage="No options found",
+                                        nothingFound="No options found",
                                         clearable=True,
                                         style={'backgroundColor': 'lightgrey', 'position': 'absolute', 'z-index': '3', 'height': 'auto', 'width': '49%'}
                                 # data=[{'value': key, 'label': value} for key, value in symbols_dict.items()],
@@ -54,7 +54,7 @@ def create_layout_comparison():
 
 
 
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         html.P("Cryptocurrencies", style={'textAlign': 'center', 'fontSize': 24, 'margin-top': 10,}),
                         dmc.Select(
                                 # data=crypto_symbols,
@@ -62,7 +62,7 @@ def create_layout_comparison():
                                         id='right-dropdown', 
                                         value=crypto_symbols[0],
                                         searchable=True,
-                                        nothingFoundMessage="No options found",
+                                        nothingFound="No options found",
                                         clearable=True,
                                         style={'backgroundColor': 'lightgrey', 'position': 'absolute', 'z-index': '3', 'width': '49%'}    # Specify the desired width}
                                         
@@ -151,7 +151,7 @@ def create_layout_comparison():
 
         dmc.Grid(
                 children=[
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         dmc.Card(
                         children=[
                                 dmc.CardSection(
@@ -184,7 +184,7 @@ def create_layout_comparison():
                 ]), span="auto"),
 
 
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         dmc.Card(
                         children=[
                                 dmc.CardSection(

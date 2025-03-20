@@ -3,13 +3,10 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 import time
-# url =  'https://stockanalysis.com/list/biggest-companies/'
-# r = requests.get(url)
-# # print(r)
-# soup  =  BeautifulSoup(r.text, 'lxml')
-# # table = soup.find('table', class_= 'default-table table marketcap-table dataTable')
-# table = soup.find('table', class_= 'symbol-table svelte-132bklf') #might have to update html tag because website changes it 
-
+from functools import lru_cache
+import random
+import json
+from typing import Dict, Any, Optional
 
 total_stock=20
 url = 'https://stockanalysis.com/list/biggest-companies/'
@@ -87,22 +84,91 @@ selected_rows = ['Total Revenue', 'Total Expenses', 'Operating Revenue',  'Opera
                  'Operating Income', 'Net Income','Net Income Common Stockholders', 'Gross Profit', 'EBITDA',
                   'Tax Rate For Calcs']
 
-# selected_rows = ['Total Revenue', 'Net Income', 'Gross Profit', 'EBITDA', 'Total Expenses', 'Operating Expense', 'Tax Rate For Calcs']
+def get_ticker_info(symbol_str: str, retry_count: int = 5, delay: int = 3) -> Dict[str, Any]:
+    """Get ticker info with retry logic and rate limiting"""
+    for attempt in range(retry_count):
+        try:
+            symbol = yf.Ticker(str(symbol_str))
+            # Add a more conservative delay with exponential backoff
+            backoff_time = delay * (2 ** attempt) + random.uniform(1, 3)
+            print(f"Fetching data for {symbol_str}, attempt {attempt+1}/{retry_count}")
+            time.sleep(backoff_time)
+            
+            # Try to get info, handle potential JSON decode errors
+            try:
+                info = symbol.info
+                if not info:  # If info is empty
+                    raise ValueError("Empty info received")
+                print(f"Successfully fetched data for {symbol_str}")
+                return info
+            except json.JSONDecodeError:
+                print(f"JSON decode error for {symbol_str}, retrying after {backoff_time}s...")
+                continue
+            except Exception as e:
+                print(f"Error getting info for {symbol_str}: {e}")
+                continue
+                
+        except requests.exceptions.HTTPError as e:
+            if "429" in str(e):  # Rate limit exceeded
+                print(f"Rate limit exceeded for {symbol_str}, waiting longer before retry...")
+                # Add a much longer delay for rate limit errors
+                time.sleep(delay * 5 * (attempt + 1))
+            elif attempt == retry_count - 1:
+                print(f"Failed to fetch data for {symbol_str} after {retry_count} attempts: {e}")
+                return {}
+            else:
+                print(f"HTTP error on attempt {attempt + 1}, retrying after delay...")
+                time.sleep(delay * (attempt + 1))
+        except Exception as e:
+            if attempt == retry_count - 1:
+                print(f"Failed to fetch data for {symbol_str} after {retry_count} attempts: {e}")
+                return {}
+            print(f"Attempt {attempt + 1} failed, retrying after delay...")
+            time.sleep(delay * (attempt + 1))
+    return {}
 
-    
+@lru_cache(maxsize=100)
 def market_metrics():
     lst2 = []
-    for symbol_str in symbols_list:
-        # print(symbol_str)
-        symbol = yf.Ticker(str(symbol_str))
-        stock_info = symbol.info
-        stock_dict = {}
-        for metric in list_of_metrics:
-            if metric in stock_info:
-                stock_dict[metric] = stock_info[metric]
+    failed_symbols = []
+    
+    # Process symbols in smaller batches to avoid rate limits
+    batch_size = 5
+    for i in range(0, len(symbols_list), batch_size):
+        batch = symbols_list[i:i+batch_size]
+        print(f"Processing batch {i//batch_size + 1}/{(len(symbols_list)+batch_size-1)//batch_size}")
         
-        lst2.append(stock_dict)
-    # print(lst2)
+        for symbol_str in batch:
+            try:
+                stock_info = get_ticker_info(symbol_str)
+                if not stock_info:
+                    failed_symbols.append(symbol_str)
+                    continue
+                    
+                stock_dict = {}
+                for metric in list_of_metrics:
+                    if metric in stock_info:
+                        stock_dict[metric] = stock_info[metric]
+                
+                if stock_dict:  # Only append if we got some data
+                    lst2.append(stock_dict)
+                    
+            except Exception as e:
+                print(f"Error processing {symbol_str}: {e}")
+                failed_symbols.append(symbol_str)
+                continue
+        
+        # Add a longer delay between batches
+        if i + batch_size < len(symbols_list):
+            print(f"Completed batch, waiting before next batch...")
+            time.sleep(5)
+    
+    if not lst2:  # If we got no data at all
+        raise Exception("Failed to fetch data for any symbols")
+        
+    if failed_symbols:
+        print(f"Warning: Failed to fetch data for symbols: {', '.join(failed_symbols)}")
+    
     Stock_df = pd.DataFrame(lst2, columns=[i for i in list_of_metrics])
     print(Stock_df)
     return Stock_df, percent_change(Stock_df)
@@ -236,18 +302,18 @@ def income_statement_table():
 #         # new_df.set_index('ticker', inplace=False)
 #         # lst.append(new_df)
 #     # print(lst)
-#         new_df.index = new_df.index.astype(str)  # Convert index to strings
-#         # print(new_df.index)
-#         new_df.columns = new_df.columns.astype(str)
-#         new_df_columns = list(new_df.columns)
-#         table_data = new_df[new_df_columns]
+        # new_df.index = new_df.index.astype(str)  # Convert index to strings
+        # # print(new_df.index)
+        # new_df.columns = new_df.columns.astype(str)
+        # new_df_columns = list(new_df.columns)
+        # table_data = new_df[new_df_columns]
       
 
 #     # print(empty_df)
-#         # empty_df.append(table_data)
-#         # print(symbol)
-#         # print(table_data)
-#         lst.append(table_data)
+        # empty_df.append(table_data)
+        # print(symbol)
+        # print(table_data)
+        # lst.append(table_data)
 #     print(lst)
 
 #     return lst
@@ -339,7 +405,7 @@ def income_statement_table():
     #                 stock_dict[metric] = stock_info[metric]
     #         lst2.append(stock_dict)
     #     sorted_list = sorted(lst2, key=lambda x: x['marketCap'], reverse=True) #can use this to sort by other metrics, the callback will use the 
-    #     #x['marketCap]
+    #     #x['marketCap']
     #     # print(sorted_list)
     #     Stock_df = pd.DataFrame(sorted_list, columns=[i for i in list_of_metrics])
     #     top_stocks = Stock_df.head(10)
@@ -384,4 +450,3 @@ def income_statement_table():
  
 #     print('from data_analysis',top_symbols)
 #     return top_symbols
-

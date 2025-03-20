@@ -21,7 +21,7 @@ def create_layout_crypto():
     crypto_layout = html.Div(children=[
          dmc.Grid(
                 children=[
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         html.P("Cryptocurrencies", style={'textAlign': 'center', 'fontSize': 24, 'margin-top': 10,}),
                         dmc.Select(
                                 # data=crypto_symbols,
@@ -29,7 +29,7 @@ def create_layout_crypto():
                                         id='crypto-dropdown', 
                                         value=crypto_symbols[0],
                                         searchable=True,
-                                        nothingFoundMessage="No options found",
+                                        nothingFound="No options found",
                                         clearable=True,
                                         style={'backgroundColor': 'lightgrey', 'position': 'absolute', 'z-index': '3', 'width': '49%'}    # Specify the desired width}
                                         
@@ -101,7 +101,7 @@ def create_layout_crypto():
 
         dmc.Grid(
                 children=[
-                dmc.GridCol(html.Div([
+                dmc.Col(html.Div([
                         dmc.Card(
                         children=[
                                 dmc.CardSection(
